@@ -13,7 +13,7 @@ logging.info(f"🔑 Subscription Key log: {os.getenv('PRIMARY_KEY')[:6] if os.ge
 print(f"🔑 Subscription Key (first 6 chars): {os.getenv('PRIMARY_KEY')[:6] if os.getenv('PRIMARY_KEY') else '❌ NOT SET'}")
 def fetch_comtrade_data(req: ComtradeRequest):
     try:
-        base_url = "https://comtradeapi.un.org/public/v1/get"
+        base_url = "https://comtradeapi.un.org/public/v1/getFinalData"
         headers = {
             "Ocp-Apim-Subscription-Key": API_KEY
         }
@@ -33,7 +33,9 @@ def fetch_comtrade_data(req: ComtradeRequest):
             "maxRecords": 5000
         }
 
-        logging.info("Request payload: %s", req.dict())
+        logging.info(f"🌍 Base URL: {base_url}")
+        logging.info(f"🔧 Headers: {headers}")
+        logging.info(f"🧾 Params: {params}")
         response = requests.get(base_url, headers=headers, params=params)
         response.raise_for_status()
         data = response.json()
