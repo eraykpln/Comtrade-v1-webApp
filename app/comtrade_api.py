@@ -8,7 +8,9 @@ logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 API_KEY = os.getenv("PRIMARY_KEY")
-
+import os
+logging.info(f"🔑 Subscription Key log: {os.getenv('PRIMARY_KEY')[:6] if os.getenv('PRIMARY_KEY') else '❌ NOT SET'}")
+print(f"🔑 Subscription Key (first 6 chars): {os.getenv('PRIMARY_KEY')[:6] if os.getenv('PRIMARY_KEY') else '❌ NOT SET'}")
 def fetch_comtrade_data(req: ComtradeRequest):
     try:
         base_url = "https://comtradeapi.un.org/public/v1/get"
