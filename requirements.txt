@@ -3,4 +3,3 @@ uvicorn[standard]
 pandas
 requests
 python-dotenv
-comtradeapicall

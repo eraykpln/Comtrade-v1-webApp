@@ -4,6 +4,7 @@ from typing import Optional
 from dotenv import load_dotenv
 import os
 import comtradeapicall
+from comtradeapicall import _getFinalDataAvailability
 
 load_dotenv()
 subscription_key = os.getenv('PRIMARY_KEY')
@@ -32,6 +33,10 @@ def get_final_data(
     partner2Code: Optional[str] = None,
     maxRecords: int = 2500
 ):
+    availability = _getFinalDataAvailability(typeCode, freqCode, clCode, period, reporterCode)
+    if availability is None or availability.empty:
+        return {"error": "No data available for the given parameters1."}
+
     df = comtradeapicall.getFinalData(
         subscription_key, typeCode, freqCode, clCode, period,
         reporterCode, cmdCode, flowCode, partnerCode,
@@ -53,6 +58,10 @@ def get_tariffline_data(
     partner2Code: Optional[str] = None,
     maxRecords: int = 2500
 ):
+    availability = _getFinalDataAvailability(typeCode, freqCode, clCode, period, reporterCode)
+    if availability is None or availability.empty:
+        return {"error": "No data available for the given parameterss."}
+
     df = comtradeapicall.getTarifflineData(
         subscription_key, typeCode, freqCode, clCode, period,
         reporterCode, cmdCode, flowCode, partnerCode,
