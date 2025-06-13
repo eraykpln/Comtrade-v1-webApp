@@ -3,4 +3,4 @@ uvicorn[standard]
 pandas
 requests
 python-dotenv
-comtradeapicall  # bu PyPI'da varsa, ismi bu şekilde olmalı
+comtradeapicall
