@@ -1,60 +1,80 @@
-import os
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
-from pydantic import BaseModel
+import os
 import comtradeapicall
-import pandas as pd
 
 load_dotenv()
-subscription_key = os.getenv("PRIMARY_KEY")
-
-if not subscription_key:
-    raise ValueError("❌ PRIMARY_KEY .env dosyasında tanımlı değil.")
+subscription_key = os.getenv('PRIMARY_KEY')
 
 app = FastAPI()
 
-class ComtradeRequest(BaseModel):
-    typeCode: str
-    freqCode: str
-    clCode: str
-    period: str
-    reporterCode: str
-    cmdCode: str
-    flowCode: str
-    partnerCode: str | None = None
-    partner2Code: str | None = None
-    customsCode: str | None = None
-    motCode: str | None = None
-    maxRecords: int = 2500
-    format_output: str = "JSON"
-    aggregateBy: str | None = None
-    breakdownMode: str = "classic"
-    countOnly: bool | None = None
-    includeDesc: bool = True
+# CORS sadece frontend'e izin veriyor
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://ffront-comtrade.vercel.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.post("/api/comtrade/final")
-async def get_comtrade_final_data(req: ComtradeRequest):
-    try:
-        df = comtradeapicall.getFinalData(
-            subscription_key=subscription_key,
-            typeCode=req.typeCode,
-            freqCode=req.freqCode,
-            clCode=req.clCode,
-            period=req.period,
-            reporterCode=req.reporterCode,
-            cmdCode=req.cmdCode,
-            flowCode=req.flowCode,
-            partnerCode=req.partnerCode,
-            partner2Code=req.partner2Code,
-            customsCode=req.customsCode,
-            motCode=req.motCode,
-            maxRecords=req.maxRecords,
-            format_output=req.format_output,
-            aggregateBy=req.aggregateBy,
-            breakdownMode=req.breakdownMode,
-            countOnly=req.countOnly,
-            includeDesc=req.includeDesc
-        )
-        return df.head(100).to_dict(orient="records")
-    except Exception as e:
-        return {"error": str(e)}
+@app.get("/final-data")
+def get_final_data(
+    typeCode: str,
+    freqCode: str,
+    clCode: str,
+    period: str,
+    reporterCode: str,
+    cmdCode: str,
+    flowCode: str,
+    partnerCode: Optional[str] = None,
+    partner2Code: Optional[str] = None,
+    maxRecords: int = 2500
+):
+    df = comtradeapicall.getFinalData(
+        subscription_key, typeCode, freqCode, clCode, period,
+        reporterCode, cmdCode, flowCode, partnerCode,
+        partner2Code, None, None, maxRecords, 'JSON', None,
+        'classic', None, True
+    )
+    return df.to_dict(orient="records")
+
+@app.get("/tariffline-data")
+def get_tariffline_data(
+    typeCode: str,
+    freqCode: str,
+    clCode: str,
+    period: str,
+    reporterCode: str,
+    cmdCode: str,
+    flowCode: str,
+    partnerCode: Optional[str] = None,
+    partner2Code: Optional[str] = None,
+    maxRecords: int = 2500
+):
+    df = comtradeapicall.getTarifflineData(
+        subscription_key, typeCode, freqCode, clCode, period,
+        reporterCode, cmdCode, flowCode, partnerCode,
+        partner2Code, None, None, maxRecords, 'JSON',
+        None, True
+    )
+    return df.to_dict(orient="records")
+
+@app.get("/availability")
+def get_availability(
+    typeCode: str = 'C',
+    freqCode: str = 'A',
+    clCode: str = 'HS',
+    period: str = '2021',
+    reporterCode: Optional[str] = None
+):
+    df = comtradeapicall.getFinalDataAvailability(
+        subscription_key,
+        typeCode=typeCode,
+        freqCode=freqCode,
+        clCode=clCode,
+        period=period,
+        reporterCode=reporterCode
+    )
+    return df.to_dict(orient="records")
